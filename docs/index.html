@@ -1,0 +1,2191 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Pescados 🐟</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0066CC">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Controle de Pescados">
+    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iMjQiIGZpbGw9IiMwMDY2Q0MiLz4KPHN2ZyB4PSI0OCIgeT0iNDgiIHdpZHRoPSI5NiIgaGVpZ2h0PSI5NiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+CjxwYXRoIGQ9Im02IDEyIDggOCA4LTgiLz4KPHN0cm9rZSBkPSJtOCAxNSA0IDQgNC00Ii8+CjxjaXJjbGUgY3g9IjkiIGN5PSI5IiByPSIyIi8+Cjwvc3ZnPgo8L3N2Zz4K">
+    <style>
+        .active-tab {
+            border-bottom: 2px solid #0066CC;
+            color: #0066CC;
+            font-weight: bold;
+        }
+        
+        .kpi-card {
+            background: linear-gradient(135deg, #0066CC 0%, #00A69C 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .alert-low-stock {
+            background-color: #FEE2E2;
+            color: #DC2626;
+        }
+        
+        .alert-margin {
+            background-color: #FEF3C7;
+            color: #D97706;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #0066CC 0%, #00A69C 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #F3F4F6;
+            color: #374151;
+            border: 1px solid #D1D5DB;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            background: #E5E7EB;
+        }
+        
+        .table-row:hover {
+            background-color: #F9FAFB;
+        }
+        
+        .input-field {
+            border: 1px solid #D1D5DB;
+            border-radius: 6px;
+            padding: 0.5rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-color: #0066CC;
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+        }
+        
+        .btn-secondary {
+            background: #6B7280;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background: #4B5563;
+            transform: translateY(-1px);
+        }
+        
+        @media (max-width: 768px) {
+            .mobile-responsive {
+                font-size: 16px;
+                padding: 0.75rem;
+            }
+            
+            .kpi-card {
+                padding: 1rem;
+            }
+            
+            .btn-primary, .btn-secondary {
+                padding: 0.75rem 1rem;
+                font-size: 16px;
+            }
+        }
+
+        /* Dark theme styles */
+        .dark {
+            background-color: #1a1a1a;
+            color: #e5e5e5;
+        }
+
+        .dark .bg-white {
+            background-color: #2d2d2d !important;
+            color: #e5e5e5;
+        }
+
+        .dark .bg-gray-50 {
+            background-color: #3a3a3a !important;
+            color: #e5e5e5;
+        }
+
+        .dark .text-gray-800 {
+            color: #e5e5e5 !important;
+        }
+
+        .dark .text-gray-600 {
+            color: #b5b5b5 !important;
+        }
+
+        .dark .text-gray-700 {
+            color: #c5c5c5 !important;
+        }
+
+        .dark .border-gray-200 {
+            border-color: #4a4a4a !important;
+        }
+
+        .dark .input-field {
+            background-color: #3a3a3a;
+            border-color: #4a4a4a;
+            color: #e5e5e5;
+        }
+
+        .dark .input-field:focus {
+            border-color: #0066CC;
+            background-color: #2d2d2d;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Login Screen -->
+    <div id="login-screen" class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-600 to-teal-600">
+        <div class="bg-white p-8 rounded-lg shadow-2xl w-full max-w-md">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">🐟 Controle de Pescados</h1>
+                <p class="text-gray-600">Sistema de controle de compra e venda</p>
+            </div>
+            
+            <form id="login-form" class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Usuário</label>
+                    <input type="text" id="login-usuario" class="input-field w-full" placeholder="Digite seu usuário" required>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Senha</label>
+                    <input type="password" id="login-senha" class="input-field w-full" placeholder="Digite sua senha" required>
+                </div>
+                
+                <button type="submit" class="btn-primary w-full">Entrar</button>
+            </form>
+            
+            <div class="mt-6 text-center">
+                <button onclick="showFirstAccessModal()" class="text-blue-600 hover:text-blue-800 text-sm">Primeiro acesso? Criar senha</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- First Access Modal -->
+    <div id="first-access-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white p-8 rounded-lg shadow-2xl w-full max-w-md">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Primeiro Acesso</h2>
+            
+            <form id="first-access-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Criar Usuário</label>
+                    <input type="text" id="new-usuario" class="input-field w-full" placeholder="Digite um usuário" required>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Criar Senha</label>
+                    <input type="password" id="new-senha" class="input-field w-full" placeholder="Digite uma senha" required>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Confirmar Senha</label>
+                    <input type="password" id="confirm-senha" class="input-field w-full" placeholder="Confirme a senha" required>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Imagem do Perfil</label>
+                    <input type="file" id="user-imagem" accept="image/*" class="input-field w-full" onchange="previewImage(event, 'preview-user')" required>
+                    <div id="preview-user" class="mt-2 flex justify-center"></div>
+                </div>
+                
+                <div class="flex space-x-4">
+                    <button type="button" onclick="hideFirstAccessModal()" class="btn-secondary flex-1">Cancelar</button>
+                    <button type="submit" class="btn-primary flex-1">Criar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="main-app" class="hidden">
+        <!-- Logout Button -->
+        <div class="bg-white shadow-sm border-b">
+            <div class="container mx-auto px-4 py-2 flex justify-between items-center">
+                <div class="flex items-center space-x-3">
+                    <img id="user-avatar" src="" alt="Avatar" class="w-8 h-8 rounded-full object-cover hidden">
+                    <span class="text-sm text-gray-600">Logado como: <span id="logged-user" class="font-semibold"></span></span>
+                </div>
+                <button onclick="logout()" class="text-red-600 hover:text-red-800 text-sm">🚪 Sair</button>
+            </div>
+        </div>
+    <div class="container mx-auto p-4 max-w-7xl">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">Controle de Pescados 🐟</h1>
+            <p class="text-gray-600">Sistema de controle de compra e venda de peixes</p>
+        </header>
+
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+            <!-- Navigation Tabs -->
+            <div class="flex border-b border-gray-200 bg-gray-50">
+                <button class="tab-button flex-1 py-4 px-6 text-gray-600 hover:text-blue-600 focus:outline-none transition-colors duration-200 active-tab" data-tab="dashboard">
+                    📊 Dashboard
+                </button>
+                <button class="tab-button flex-1 py-4 px-6 text-gray-600 hover:text-blue-600 focus:outline-none transition-colors duration-200" data-tab="compras">
+                    🛒 Compras
+                </button>
+                <button class="tab-button flex-1 py-4 px-6 text-gray-600 hover:text-blue-600 focus:outline-none transition-colors duration-200" data-tab="vendas">
+                    💰 Vendas
+                </button>
+                <button class="tab-button flex-1 py-4 px-6 text-gray-600 hover:text-blue-600 focus:outline-none transition-colors duration-200" data-tab="estoque">
+                    📦 Estoque
+                </button>
+                <button class="tab-button flex-1 py-4 px-6 text-gray-600 hover:text-blue-600 focus:outline-none transition-colors duration-200" data-tab="configuracoes">
+                    ⚙️ Configurações
+                </button>
+            </div>
+
+            <!-- Dashboard Tab -->
+            <div id="dashboard" class="tab-content p-6">
+                <h2 class="text-3xl font-bold mb-6 text-gray-800">Dashboard</h2>
+                
+                <!-- KPI Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                    <div class="kpi-card bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-xl font-semibold text-black mb-2">Peso Comprado</h3>
+                                <p class="text-4xl font-bold text-white mb-1" id="kpi-peso-comprado">0 kg</p>
+                                <p class="text-sm text-gray-200" id="kpi-compras-count">0 compras realizadas</p>
+                            </div>
+                            <div class="text-blue-200">
+                                <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="kpi-card bg-gradient-to-br from-green-500 to-green-600 text-white shadow-lg">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-xl font-semibold text-black mb-2">Peso Vendido</h3>
+                                <p class="text-4xl font-bold text-white mb-1" id="kpi-peso-vendido">0 kg</p>
+                                <p class="text-sm text-gray-200" id="kpi-vendas-count">0 vendas realizadas</p>
+                            </div>
+                            <div class="text-green-200">
+                                <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.51-1.31c-.562-.649-1.413-1.076-2.353-1.253V5z" clip-rule="evenodd"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="kpi-card bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-lg">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-xl font-semibold text-black mb-2">Receita Total</h3>
+                                <p class="text-4xl font-bold text-white mb-1" id="kpi-receita-total">R$ 0,00</p>
+                                <p class="text-sm text-gray-200" id="kpi-ticket-medio">Ticket médio: R$ 0,00</p>
+                            </div>
+                            <div class="text-purple-200">
+                                <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="kpi-card bg-gradient-to-br from-red-500 to-red-600 text-white shadow-lg">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-xl font-semibold text-black mb-2">Custo Total</h3>
+                                <p class="text-4xl font-bold text-white mb-1" id="kpi-custo-total">R$ 0,00</p>
+                                <p class="text-sm text-gray-200" id="kpi-custo-medio">Custo médio: R$ 0,00/kg</p>
+                            </div>
+                            <div class="text-red-200">
+                                <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="kpi-card bg-gradient-to-br from-yellow-500 to-yellow-600 text-white shadow-lg">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-xl font-semibold text-black mb-2">Lucro Líquido</h3>
+                                <p class="text-4xl font-bold text-white mb-1" id="kpi-lucro-liquido">R$ 0,00</p>
+                                <p class="text-sm text-gray-200" id="kpi-roi">ROI: 0%</p>
+                            </div>
+                            <div class="text-yellow-200">
+                                <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="kpi-card bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-lg">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-xl font-semibold text-black mb-2">Margem de Lucro</h3>
+                                <p class="text-4xl font-bold text-white mb-1" id="kpi-margem-lucro">0%</p>
+                                <p class="text-sm text-gray-200" id="kpi-estoque-atual">Estoque: 0 kg</p>
+                            </div>
+                            <div class="text-indigo-200">
+                                <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.293l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="bg-gray-50 p-4 rounded-lg mb-6">
+                    <h3 class="text-lg font-semibold mb-4">Filtros</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Data Inicial</label>
+                            <input type="date" id="filter-data-inicial" class="input-field w-full" onchange="applyFilters()">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Data Final</label>
+                            <input type="date" id="filter-data-final" class="input-field w-full" onchange="applyFilters()">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Espécie</label>
+                            <select id="filter-especie" class="input-field w-full" onchange="applyFilters()">
+                                <option value="">Todas as espécies</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <div class="bg-white p-4 rounded-lg border">
+                        <h3 class="text-lg font-semibold mb-4">Kg Vendidos por Espécie</h3>
+                        <div class="chart-container" style="position: relative; height: 300px; width: 100%;">
+                            <canvas id="chart-especies"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg border">
+                        <h3 class="text-lg font-semibold mb-4">Receita por Cliente</h3>
+                        <div class="chart-container" style="position: relative; height: 300px; width: 100%;">
+                            <canvas id="chart-clientes"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stock Alert -->
+                <div class="bg-white p-4 rounded-lg border mb-6">
+                    <h3 class="text-lg font-semibold mb-4">Estoque Atual</h3>
+                    <div id="estoque-container" class="overflow-x-auto">
+                        <table class="min-w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Espécie</th>
+                                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Kg em Estoque</th>
+                                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="estoque-tbody">
+                                <!-- Estoque será preenchido dinamicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Top Tables -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white p-4 rounded-lg border">
+                        <h3 class="text-lg font-semibold mb-4">Top 3 Espécies Mais Lucrativas</h3>
+                        <div id="top-especies" class="space-y-2">
+                            <!-- Será preenchido dinamicamente -->
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg border">
+                        <h3 class="text-lg font-semibold mb-4">Top 3 Clientes Mais Rentáveis</h3>
+                        <div id="top-clientes" class="space-y-2">
+                            <!-- Será preenchido dinamicamente -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Compras Tab -->
+            <div id="compras" class="tab-content p-6 hidden">
+                <h2 class="text-3xl font-bold mb-6 text-gray-800">Compras</h2>
+                
+                <!-- Add Purchase Form -->
+                <div class="bg-gray-50 p-6 rounded-lg mb-6">
+                    <h3 class="text-lg font-semibold mb-4">Adicionar Compra</h3>
+                    <form id="form-compra" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Data da Compra</label>
+                            <input type="date" id="compra-data" class="input-field w-full mobile-responsive" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Fornecedor</label>
+                            <select id="compra-fornecedor" class="input-field w-full mobile-responsive" required>
+                                <option value="">Selecione o fornecedor</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Espécie</label>
+                            <select id="compra-especie" class="input-field w-full mobile-responsive" onchange="preencherPrecoEspecie('compra')" required>
+                                <option value="">Selecione a espécie</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Peso (kg)</label>
+                            <input type="number" id="compra-peso" class="input-field w-full mobile-responsive" step="0.01" placeholder="0.00" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Preço (R$/kg)</label>
+                            <input type="number" id="compra-preco" class="input-field w-full mobile-responsive" step="0.01" placeholder="0.00" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Nº Recibo</label>
+                            <input type="text" id="compra-recibo" class="input-field w-full mobile-responsive" placeholder="Opcional">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Observações</label>
+                            <input type="text" id="compra-observacoes" class="input-field w-full mobile-responsive" placeholder="Opcional">
+                        </div>
+                    </form>
+                    <button type="submit" form="form-compra" class="btn-primary mt-4">Adicionar Compra</button>
+                </div>
+
+                <!-- Purchases Table -->
+                <div class="bg-white rounded-lg border overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Data</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Fornecedor</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Espécie</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Peso (kg)</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Preço (R$/kg)</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Total (R$)</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Recibo</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="compras-tbody">
+                                <!-- Compras serão preenchidas dinamicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Totals Footer -->
+                    <div class="bg-gray-50 px-4 py-3 border-t">
+                        <div class="flex justify-between items-center">
+                            <span class="font-semibold">Totais:</span>
+                            <div class="flex space-x-6">
+                                <span>Peso Total: <span id="total-peso-compras" class="font-bold">0 kg</span></span>
+                                <span>Custo Total: <span id="total-custo-compras" class="font-bold">R$ 0,00</span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vendas Tab -->
+            <div id="vendas" class="tab-content p-6 hidden">
+                <h2 class="text-3xl font-bold mb-6 text-gray-800">Vendas</h2>
+                
+                <!-- Add Sale Form -->
+                <div class="bg-gray-50 p-6 rounded-lg mb-6">
+                    <h3 class="text-lg font-semibold mb-4">Adicionar Venda</h3>
+                    <form id="form-venda" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Data da Venda</label>
+                            <input type="date" id="venda-data" class="input-field w-full mobile-responsive" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Cliente</label>
+                            <select id="venda-cliente" class="input-field w-full mobile-responsive" required>
+                                <option value="">Selecione o cliente</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Espécie</label>
+                            <select id="venda-especie" class="input-field w-full mobile-responsive" onchange="preencherPrecoEspecie('venda')" required>
+                                <option value="">Selecione a espécie</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Peso (kg)</label>
+                            <input type="number" id="venda-peso" class="input-field w-full mobile-responsive" step="0.01" placeholder="0.00" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Preço (R$/kg)</label>
+                            <input type="number" id="venda-preco" class="input-field w-full mobile-responsive" step="0.01" placeholder="0.00" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Nº Nota/Recibo</label>
+                            <input type="text" id="venda-recibo" class="input-field w-full mobile-responsive" placeholder="Opcional">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Observações</label>
+                            <input type="text" id="venda-observacoes" class="input-field w-full mobile-responsive" placeholder="Opcional">
+                        </div>
+                    </form>
+                    <button type="submit" form="form-venda" class="btn-primary mt-4">Adicionar Venda</button>
+                </div>
+
+                <!-- Sales Table -->
+                <div class="bg-white rounded-lg border overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Data</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Cliente</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Espécie</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Peso (kg)</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Preço (R$/kg)</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Total (R$)</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Recibo</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="vendas-tbody">
+                                <!-- Vendas serão preenchidas dinamicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Totals Footer -->
+                    <div class="bg-gray-50 px-4 py-3 border-t">
+                        <div class="flex justify-between items-center">
+                            <span class="font-semibold">Totais:</span>
+                            <div class="flex space-x-6">
+                                <span>Peso Total: <span id="total-peso-vendas" class="font-bold">0 kg</span></span>
+                                <span>Receita Total: <span id="total-receita-vendas" class="font-bold">R$ 0,00</span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estoque Tab -->
+            <div id="estoque" class="tab-content hidden p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">📦 Controle de Estoque</h2>
+                
+                <!-- Stock Summary Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="kpi-card bg-blue-50 border-l-4 border-blue-500">
+                        <h3 class="text-lg font-semibold text-blue-700 mb-2">Total em Estoque</h3>
+                        <p class="text-3xl font-bold text-blue-800" id="estoque-total-peso">0 kg</p>
+                    </div>
+                    <div class="kpi-card bg-green-50 border-l-4 border-green-500">
+                        <h3 class="text-lg font-semibold text-green-700 mb-2">Valor do Estoque</h3>
+                        <p class="text-3xl font-bold text-green-800" id="estoque-valor-total">R$ 0,00</p>
+                    </div>
+                    <div class="kpi-card bg-yellow-50 border-l-4 border-yellow-500">
+                        <h3 class="text-lg font-semibold text-yellow-700 mb-2">Espécies Diferentes</h3>
+                        <p class="text-3xl font-bold text-yellow-800" id="estoque-especies-count">0</p>
+                    </div>
+                </div>
+
+                <!-- Stock Table -->
+                <div class="bg-white rounded-lg shadow-sm border">
+                    <div class="p-4 border-b border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-800">Estoque por Espécie</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Espécie</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Peso Comprado</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Peso Vendido</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estoque Atual</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Preço Médio</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Valor Total</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="estoque-table-body" class="bg-white divide-y divide-gray-200">
+                                <!-- Stock data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Low Stock Alert -->
+                <div id="low-stock-alert" class="mt-6 hidden">
+                    <div class="bg-red-50 border-l-4 border-red-400 p-4">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <h3 class="text-sm font-medium text-red-800">Alerta de Estoque Baixo</h3>
+                                <div class="mt-2 text-sm text-red-700" id="low-stock-list">
+                                    <!-- Low stock items will be listed here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configurações Tab -->
+            <div id="configuracoes" class="tab-content p-6 hidden">
+                <h2 class="text-3xl font-bold mb-6 text-gray-800">Configurações</h2>
+                
+                <!-- Seção de Cadastros -->
+                <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+                    <h3 class="text-xl font-bold mb-4 text-gray-800">Cadastros</h3>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Espécies -->
+                        <div class="bg-gray-50 p-6 rounded-lg border">
+                            <h4 class="text-lg font-semibold mb-4">Espécies</h4>
+                            <div class="space-y-3 mb-4">
+                                <div class="flex gap-2">
+                                    <input type="file" id="nova-especie-imagem" accept="image/*" class="hidden" onchange="previewImage(event, 'preview-especie')">
+                                    <button onclick="document.getElementById('nova-especie-imagem').click()" class="btn-secondary">🖼️</button>
+                                    <button onclick="adicionarEspecie()" class="btn-primary">Adicionar</button>
+                                </div>
+                                <input type="text" id="nova-especie-nome" class="input-field w-full" placeholder="Nome da espécie">
+                                <input type="number" id="nova-especie-preco" class="input-field w-full" step="0.01" placeholder="Preço (R$/kg)" required>
+                            </div>
+                            <div id="preview-especie" class="mb-4"></div>
+                            <ul id="lista-especies" class="space-y-2">
+                                <!-- Espécies serão listadas aqui -->
+                            </ul>
+                        </div>
+
+                        <!-- Clientes -->
+                        <div class="bg-gray-50 p-6 rounded-lg border">
+                            <h4 class="text-lg font-semibold mb-4">Clientes</h4>
+                            <div class="space-y-3 mb-4">
+                                <div class="flex gap-2">
+                                    <input type="file" id="novo-cliente-imagem" accept="image/*" class="hidden" onchange="previewImage(event, 'preview-cliente')">
+                                    <button onclick="document.getElementById('novo-cliente-imagem').click()" class="btn-secondary">🖼️</button>
+                                    <button onclick="adicionarCliente()" class="btn-primary">Adicionar</button>
+                                </div>
+                                <input type="text" id="novo-cliente-nome" class="input-field w-full" placeholder="Nome do cliente">
+                            </div>
+                            <div id="preview-cliente" class="mb-4"></div>
+                            <ul id="lista-clientes" class="space-y-2">
+                                <!-- Clientes serão listados aqui -->
+                            </ul>
+                        </div>
+
+                        <!-- Fornecedores -->
+                        <div class="bg-gray-50 p-6 rounded-lg border">
+                            <h4 class="text-lg font-semibold mb-4">Fornecedores</h4>
+                            <div class="space-y-3 mb-4">
+                                <div class="flex gap-2">
+                                    <input type="file" id="novo-fornecedor-imagem" accept="image/*" class="hidden" onchange="previewImage(event, 'preview-fornecedor')">
+                                    <button onclick="document.getElementById('novo-fornecedor-imagem').click()" class="btn-secondary">🖼️</button>
+                                    <button onclick="adicionarFornecedor()" class="btn-primary">Adicionar</button>
+                                </div>
+                                <input type="text" id="novo-fornecedor-nome" class="input-field w-full" placeholder="Nome do fornecedor">
+                            </div>
+                            <div id="preview-fornecedor" class="mb-4"></div>
+                            <ul id="lista-fornecedores" class="space-y-2">
+                                <!-- Fornecedores serão listados aqui -->
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seção de Configurações Gerais -->
+                <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+                    <h3 class="text-xl font-bold mb-4 text-gray-800">Configurações Gerais</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Margem Mínima (%)</label>
+                            <input type="number" id="margem-minima" class="input-field w-full" step="0.1" placeholder="10.0">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Alterar Senha</label>
+                            <button onclick="showChangePasswordModal()" class="btn-secondary w-full">Alterar Senha</button>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <label class="block text-sm font-medium text-gray-700">Tema</label>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-gray-600">☀️</span>
+                                <label for="theme-toggle" class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="theme-toggle" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500"></div>
+                                </label>
+                                <span class="text-gray-600">🌙</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="salvarConfiguracoes()" class="btn-primary w-full mt-6">Salvar Configurações</button>
+                </div>
+
+                <!-- Change Password Modal -->
+                <div id="change-password-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+                    <div class="bg-white p-8 rounded-lg shadow-2xl w-full max-w-md">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Alterar Senha</h2>
+                        <form id="change-password-form" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Senha Atual</label>
+                                <input type="password" id="current-senha" class="input-field w-full" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Nova Senha</label>
+                                <input type="password" id="new-senha-config" class="input-field w-full" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Confirmar Nova Senha</label>
+                                <input type="password" id="confirm-new-senha-config" class="input-field w-full" required>
+                            </div>
+                            <div class="flex space-x-4">
+                                <button type="button" onclick="hideChangePasswordModal()" class="btn-secondary flex-1">Cancelar</button>
+                                <button type="submit" class="btn-primary flex-1">Alterar</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- PWA Install Button -->
+    <button id="install-button" class="fixed bottom-4 right-4 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-colors duration-200 hidden">
+        📱 Instalar App
+    </button>
+
+    <!-- Alerts Container -->
+    <div id="alerts-container" class="fixed top-4 right-4 space-y-2 z-50">
+        <!-- Alerts will be inserted here -->
+    </div>
+
+    <script>
+        // Global variables
+        let db = {
+            compras: [],
+            vendas: [],
+            config: {
+                especies: [
+                    { nome: 'Tilápia', precoKg: 15.00, imagem: '' },
+                    { nome: 'Tambaqui', precoKg: 20.00, imagem: '' },
+                    { nome: 'Pirarucu', precoKg: 30.00, imagem: '' },
+                    { nome: 'Dourado', precoKg: 25.00, imagem: '' }
+                ],
+                clientes: [],
+                fornecedores: [],
+                margemMinima: 10
+            }
+        };
+
+        let charts = {};
+        let currentUser = null;
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeAuth();
+            initializeTabs();
+            initializeForms();
+            initializePWA();
+            initializeTheme();
+            registerServiceWorker();
+        });
+
+        // Authentication functions
+        function initializeAuth() {
+            // Check if user is already logged in
+            const savedUser = localStorage.getItem('controle_pescados_user');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                showMainApp();
+            } else {
+                showLoginScreen();
+            }
+
+            // Login form
+            document.getElementById('login-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                handleLogin();
+            });
+
+            // First access form
+            document.getElementById('first-access-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                handleFirstAccess();
+            });
+        }
+
+        function handleLogin() {
+            const usuario = document.getElementById('login-usuario').value;
+            const senha = document.getElementById('login-senha').value;
+
+            const savedCredentials = localStorage.getItem('controle_pescados_credentials');
+            
+            if (!savedCredentials) {
+                showAlert('Nenhuma conta encontrada. Use "Primeiro acesso" para criar uma conta.', 'error');
+                return;
+            }
+
+            const credentials = JSON.parse(savedCredentials);
+            
+            // Simple hash function for password (not secure for production)
+            const hashedPassword = btoa(senha);
+            
+            if (credentials.usuario === usuario && credentials.senha === hashedPassword) {
+                currentUser = { usuario: usuario };
+                localStorage.setItem('controle_pescados_user', JSON.stringify(currentUser));
+                showMainApp();
+                showAlert('Login realizado com sucesso!', 'success');
+            } else {
+                showAlert('Usuário ou senha incorretos!', 'error');
+            }
+        }
+
+        function handleFirstAccess() {
+            const usuario = document.getElementById('new-usuario').value;
+            const senha = document.getElementById('new-senha').value;
+            const confirmSenha = document.getElementById('confirm-senha').value;
+            const imagemFile = document.getElementById('user-imagem').files[0];
+
+            if (senha !== confirmSenha) {
+                showAlert('As senhas não coincidem!', 'error');
+                return;
+            }
+
+            if (senha.length < 4) {
+                showAlert('A senha deve ter pelo menos 4 caracteres!', 'error');
+                return;
+            }
+
+            if (!imagemFile) {
+                showAlert('Por favor, selecione uma imagem de perfil!', 'error');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imagemBase64 = e.target.result;
+                
+                // Simple hash function for password (not secure for production)
+                const hashedPassword = btoa(senha);
+                
+                const credentials = {
+                    usuario: usuario,
+                    senha: hashedPassword,
+                    imagem: imagemBase64
+                };
+
+                localStorage.setItem('controle_pescados_credentials', JSON.stringify(credentials));
+                hideFirstAccessModal();
+                showAlert('Conta criada com sucesso! Faça login agora.', 'success');
+            };
+            reader.readAsDataURL(imagemFile);
+        }
+
+        function showLoginScreen() {
+            document.getElementById('login-screen').classList.remove('hidden');
+            document.getElementById('main-app').classList.add('hidden');
+        }
+
+        function showMainApp() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+            document.getElementById('logged-user').textContent = currentUser.usuario;
+            
+            // Show user avatar if available
+            const savedCredentials = localStorage.getItem('controle_pescados_credentials');
+            if (savedCredentials) {
+                const credentials = JSON.parse(savedCredentials);
+                if (credentials.imagem) {
+                    const userAvatar = document.getElementById('user-avatar');
+                    userAvatar.src = credentials.imagem;
+                    userAvatar.classList.remove('hidden');
+                }
+            }
+            
+            // Load data and update dashboard
+            loadData();
+            updateDashboard();
+            updateEstoque();
+            populateSelects();
+        }
+
+        function logout() {
+            if (confirm('Tem certeza que deseja sair?')) {
+                localStorage.removeItem('controle_pescados_user');
+                currentUser = null;
+                showLoginScreen();
+                
+                // Clear forms
+                document.getElementById('login-form').reset();
+            }
+        }
+
+        function showFirstAccessModal() {
+            document.getElementById('first-access-modal').classList.remove('hidden');
+        }
+
+        function hideFirstAccessModal() {
+            document.getElementById('first-access-modal').classList.add('hidden');
+            document.getElementById('first-access-form').reset();
+        }
+
+        // Register Service Worker
+        function registerServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/sw.js')
+                        .then((registration) => {
+                            console.log('SW registered: ', registration);
+                        })
+                        .catch((registrationError) => {
+                            console.log('SW registration failed: ', registrationError);
+                        });
+                });
+            }
+        }
+
+        // Tab functionality
+        function initializeTabs() {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Remove active class from all buttons and hide all contents
+                    tabButtons.forEach(btn => btn.classList.remove('active-tab'));
+                    tabContents.forEach(content => content.classList.add('hidden'));
+
+                    // Add active class to clicked button and show corresponding content
+                    button.classList.add('active-tab');
+                    const targetTab = button.dataset.tab;
+                    document.getElementById(targetTab).classList.remove('hidden');
+
+                    // Update dashboard when switching to it
+                    if (targetTab === 'dashboard') {
+                        updateDashboard();
+                    }
+                });
+            });
+        }
+
+        // Form initialization
+        function initializeForms() {
+            // Compras form
+            document.getElementById('form-compra').addEventListener('submit', function(e) {
+                e.preventDefault();
+                adicionarCompra();
+            });
+
+            // Vendas form
+            document.getElementById('form-venda').addEventListener('submit', function(e) {
+                e.preventDefault();
+                adicionarVenda();
+            });
+
+            // Set today's date as default
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('compra-data').value = today;
+            document.getElementById('venda-data').value = today;
+        }
+
+        // Data persistence
+        function saveData() {
+            localStorage.setItem('controle_pescados_db', JSON.stringify(db));
+        }
+
+        function loadData() {
+            const savedData = localStorage.getItem('controle_pescados_db');
+            if (savedData) {
+                db = JSON.parse(savedData);
+            }
+            updateTables();
+            updateConfigLists();
+        }
+
+        // Add purchase
+        function adicionarCompra() {
+            const data = document.getElementById('compra-data').value;
+                const fornecedorNome = document.getElementById("compra-fornecedor").value;
+            const fornecedor = db.config.fornecedores.find(f => f.nome === fornecedorNome);
+            const especie = document.getElementById('compra-especie').value;
+            const peso = parseFloat(document.getElementById('compra-peso').value);
+            const preco = parseFloat(document.getElementById('compra-preco').value);
+            const recibo = document.getElementById('compra-recibo').value;
+            const observacoes = document.getElementById('compra-observacoes').value;
+
+            // Validations
+            if (new Date(data) > new Date()) {
+                showAlert('Data não pode ser futura!', 'error');
+                return;
+            }
+
+            if (peso > 50) {
+                showAlert('Peso muito alto! Verifique se está correto.', 'warning');
+            }
+
+            const compra = {
+                id: Date.now(),
+                data,
+                fornecedor: fornecedorNome,
+                especie,
+                peso,
+                preco,
+                total: peso * preco,
+                recibo,
+                observacoes
+            };
+
+            db.compras.push(compra);
+            
+            // Add to lists if not exists
+            if (!db.config.fornecedores.includes(fornecedor)) {
+                db.config.fornecedores.push(fornecedor);
+            }
+            if (!db.config.especies.includes(especie)) {
+                db.config.especies.push(especie);
+            }
+
+            saveData();
+            updateTables();
+            updateConfigLists();
+            populateSelects();
+            document.getElementById('form-compra').reset();
+            document.getElementById('compra-data').value = new Date().toISOString().split('T')[0];
+            
+            showAlert('Compra adicionada com sucesso!', 'success');
+        }
+
+        // Add sale
+        function adicionarVenda() {
+            const data = document.getElementById('venda-data').value;
+               const clienteNome = document.getElementById("venda-cliente").value;
+            const cliente = db.config.clientes.find(c => c.nome === clienteNome);
+            const especie = document.getElementById('venda-especie').value;
+            const peso = parseFloat(document.getElementById('venda-peso').value);
+            const preco = parseFloat(document.getElementById('venda-preco').value);
+            const recibo = document.getElementById('venda-recibo').value;
+            const observacoes = document.getElementById('venda-observacoes').value;
+
+            // Check average purchase price
+            const comprasEspecie = db.compras.filter(c => c.especie === especie);
+            if (comprasEspecie.length > 0) {
+                const precoMedio = comprasEspecie.reduce((sum, c) => sum + c.preco, 0) / comprasEspecie.length;
+                if (preco < precoMedio) {
+                    showAlert(`Preço abaixo da média de compra (R$ ${precoMedio.toFixed(2)}/kg)!`, 'warning');
+                }
+            }
+
+            const venda = {
+                id: Date.now(),
+                data,
+                cliente: clienteNome,
+                especie,
+                peso,
+                preco,
+                total: peso * preco,
+                recibo,
+                observacoes
+            };
+
+            db.vendas.push(venda);
+            
+            // Add to clients list if not exists
+            if (!db.config.clientes.includes(cliente)) {
+                db.config.clientes.push(cliente);
+            }
+
+            saveData();
+            updateTables();
+            updateConfigLists();
+            document.getElementById('form-venda').reset();
+            document.getElementById('venda-data').value = new Date().toISOString().split('T')[0];
+            
+            showAlert('Venda adicionada com sucesso!', 'success');
+        }
+
+        // Update tables
+        function updateTables() {
+            updateComprasTable();
+            updateVendasTable();
+        }
+
+        function updateComprasTable() {
+            const tbody = document.getElementById('compras-tbody');
+            tbody.innerHTML = '';
+
+            let totalPeso = 0;
+            let totalCusto = 0;
+
+            db.compras.forEach(compra => {
+                totalPeso += compra.peso;
+                totalCusto += compra.total;
+
+                const row = document.createElement('tr');
+                row.className = 'table-row border-b';
+                row.innerHTML = `
+                    <td class="px-4 py-3">${new Date(compra.data).toLocaleDateString('pt-BR')}</td>
+                    <td class="px-4 py-3">${compra.fornecedor}</td>
+                    <td class="px-4 py-3">${compra.especie}</td>
+                    <td class="px-4 py-3">${compra.peso.toFixed(2)}</td>
+                    <td class="px-4 py-3">R$ ${compra.preco.toFixed(2)}</td>
+                    <td class="px-4 py-3">R$ ${compra.total.toFixed(2)}</td>
+                    <td class="px-4 py-3">${compra.recibo || '-'}</td>
+                    <td class="px-4 py-3">
+                        <button onclick="removerCompra(${compra.id})" class="text-red-600 hover:text-red-800">🗑️</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            document.getElementById('total-peso-compras').textContent = `${totalPeso.toFixed(2)} kg`;
+            document.getElementById('total-custo-compras').textContent = `R$ ${totalCusto.toFixed(2)}`;
+        }
+
+        function updateVendasTable() {
+            const tbody = document.getElementById('vendas-tbody');
+            tbody.innerHTML = '';
+
+            let totalPeso = 0;
+            let totalReceita = 0;
+
+            db.vendas.forEach(venda => {
+                totalPeso += venda.peso;
+                totalReceita += venda.total;
+
+                const row = document.createElement('tr');
+                row.className = 'table-row border-b';
+                row.innerHTML = `
+                    <td class="px-4 py-3">${new Date(venda.data).toLocaleDateString('pt-BR')}</td>
+                    <td class="px-4 py-3">${venda.cliente}</td>
+                    <td class="px-4 py-3">${venda.especie}</td>
+                    <td class="px-4 py-3">${venda.peso.toFixed(2)}</td>
+                    <td class="px-4 py-3">R$ ${venda.preco.toFixed(2)}</td>
+                    <td class="px-4 py-3">R$ ${venda.total.toFixed(2)}</td>
+                    <td class="px-4 py-3">${venda.recibo || '-'}</td>
+                    <td class="px-4 py-3">
+                        <button onclick="gerarReciboPDF(${venda.id})" class="text-blue-600 hover:text-blue-800 mr-2">🖨️</button>
+                        <button onclick="removerVenda(${venda.id})" class="text-red-600 hover:text-red-800">🗑️</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            document.getElementById('total-peso-vendas').textContent = `${totalPeso.toFixed(2)} kg`;
+            document.getElementById('total-receita-vendas').textContent = `R$ ${totalReceita.toFixed(2)}`;
+        }
+
+        // Remove functions
+        function removerCompra(id) {
+            if (confirm('Tem certeza que deseja remover esta compra?')) {
+                db.compras = db.compras.filter(c => c.id !== id);
+                saveData();
+                updateTables();
+                updateDashboard();
+            }
+        }
+
+        function removerVenda(id) {
+            if (confirm('Tem certeza que deseja remover esta venda?')) {
+                db.vendas = db.vendas.filter(v => v.id !== id);
+                saveData();
+                updateTables();
+                updateDashboard();
+            }
+        }
+
+        // Dashboard updates
+        function updateDashboard() {
+            updateKPIs();
+            updateCharts();
+            updateEstoque();
+            updateTopTables();
+        }
+
+        function updateKPIs() {
+            const totalPesoComprado = db.compras.reduce((sum, c) => sum + c.peso, 0);
+            const totalPesoVendido = db.vendas.reduce((sum, v) => sum + v.peso, 0);
+            const totalReceita = db.vendas.reduce((sum, v) => sum + v.total, 0);
+            const totalCusto = db.compras.reduce((sum, c) => sum + c.total, 0);
+            const lucroLiquido = totalReceita - totalCusto;
+            const margemLucro = totalReceita > 0 ? (lucroLiquido / totalReceita) * 100 : 0;
+            
+            // Additional KPIs
+            const numeroCompras = db.compras.length;
+            const numeroVendas = db.vendas.length;
+            const ticketMedio = numeroVendas > 0 ? totalReceita / numeroVendas : 0;
+            const custoMedio = totalPesoComprado > 0 ? totalCusto / totalPesoComprado : 0;
+            const roi = totalCusto > 0 ? (lucroLiquido / totalCusto) * 100 : 0;
+            const estoqueAtual = totalPesoComprado - totalPesoVendido;
+
+            // Update main KPIs
+            document.getElementById('kpi-peso-comprado').textContent = `${totalPesoComprado.toFixed(2)} kg`;
+            document.getElementById('kpi-peso-vendido').textContent = `${totalPesoVendido.toFixed(2)} kg`;
+            document.getElementById('kpi-receita-total').textContent = `R$ ${totalReceita.toFixed(2)}`;
+            document.getElementById('kpi-custo-total').textContent = `R$ ${totalCusto.toFixed(2)}`;
+            document.getElementById('kpi-lucro-liquido').textContent = `R$ ${lucroLiquido.toFixed(2)}`;
+            document.getElementById('kpi-margem-lucro').textContent = `${margemLucro.toFixed(1)}%`;
+            
+            // Update additional KPIs
+            document.getElementById('kpi-compras-count').textContent = `${numeroCompras} compras realizadas`;
+            document.getElementById('kpi-vendas-count').textContent = `${numeroVendas} vendas realizadas`;
+            document.getElementById('kpi-ticket-medio').textContent = `Ticket médio: R$ ${ticketMedio.toFixed(2)}`;
+            document.getElementById('kpi-custo-medio').textContent = `Custo médio: R$ ${custoMedio.toFixed(2)}/kg`;
+            document.getElementById('kpi-roi').textContent = `ROI: ${roi.toFixed(1)}%`;
+            document.getElementById('kpi-estoque-atual').textContent = `Estoque: ${estoqueAtual.toFixed(2)} kg`;
+
+            // Check margin alert
+            if (margemLucro < db.config.margemMinima && totalReceita > 0) {
+                showAlert(`Margem de lucro (${margemLucro.toFixed(1)}%) abaixo do mínimo (${db.config.margemMinima}%)!`, 'warning');
+            }
+        }
+
+        function updateCharts() {
+            // Species chart
+            const especiesData = {};
+            db.vendas.forEach(v => {
+                especiesData[v.especie] = (especiesData[v.especie] || 0) + v.peso;
+            });
+
+            const ctx1 = document.getElementById('chart-especies').getContext('2d');
+            if (charts.especies) charts.especies.destroy();
+            charts.especies = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(especiesData),
+                    datasets: [{
+                        label: 'Kg Vendidos',
+                        data: Object.values(especiesData),
+                        backgroundColor: '#0066CC'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Clients chart
+            const clientesData = {};
+            db.vendas.forEach(v => {
+                clientesData[v.cliente] = (clientesData[v.cliente] || 0) + v.total;
+            });
+
+            const ctx2 = document.getElementById('chart-clientes').getContext('2d');
+            if (charts.clientes) charts.clientes.destroy();
+            charts.clientes = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(clientesData),
+                    datasets: [{
+                        data: Object.values(clientesData),
+                        backgroundColor: ['#0066CC', '#00A69C', '#069E6E', '#3B7996', '#2D2E47']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        function updateEstoque() {
+            const estoque = {};
+            
+            // Calculate stock
+            db.compras.forEach(c => {
+                estoque[c.especie] = (estoque[c.especie] || 0) + c.peso;
+            });
+            
+            db.vendas.forEach(v => {
+                estoque[v.especie] = (estoque[v.especie] || 0) - v.peso;
+            });
+
+            const tbody = document.getElementById('estoque-tbody');
+            tbody.innerHTML = '';
+
+            Object.entries(estoque).forEach(([especie, quantidade]) => {
+                const row = document.createElement('tr');
+                const isLowStock = quantidade < 10;
+                
+                row.className = `border-b ${isLowStock ? 'alert-low-stock' : ''}`;
+                row.innerHTML = `
+                    <td class="px-4 py-2">${especie}</td>
+                    <td class="px-4 py-2">${quantidade.toFixed(2)} kg</td>
+                    <td class="px-4 py-2">
+                        ${isLowStock ? '<span class="text-red-600 font-semibold">⚠️ Estoque Baixo</span>' : '<span class="text-green-600">✅ OK</span>'}
+                    </td>
+                `;
+                tbody.appendChild(row);
+
+                if (isLowStock) {
+                    showAlert(`Estoque baixo de ${especie}: ${quantidade.toFixed(2)} kg`, 'warning');
+                }
+            });
+        }
+
+        function updateTopTables() {
+            // Top species by profit
+            const especiesLucro = {};
+            db.vendas.forEach(v => {
+                const comprasEspecie = db.compras.filter(c => c.especie === v.especie);
+                const custoMedio = comprasEspecie.length > 0 ? 
+                    comprasEspecie.reduce((sum, c) => sum + c.preco, 0) / comprasEspecie.length : 0;
+                const lucro = (v.preco - custoMedio) * v.peso;
+                especiesLucro[v.especie] = (especiesLucro[v.especie] || 0) + lucro;
+            });
+
+            const topEspecies = Object.entries(especiesLucro)
+                .sort(([,a], [,b]) => b - a)
+                .slice(0, 3);
+
+            const topEspeciesDiv = document.getElementById('top-especies');
+            topEspeciesDiv.innerHTML = topEspecies.map(([especie, lucro], index) => `
+                <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
+                    <span>${index + 1}. ${especie}</span>
+                    <span class="font-semibold text-green-600">R$ ${lucro.toFixed(2)}</span>
+                </div>
+            `).join('');
+
+            // Top clients by revenue
+            const clientesReceita = {};
+            db.vendas.forEach(v => {
+                clientesReceita[v.cliente] = (clientesReceita[v.cliente] || 0) + v.total;
+            });
+
+            const topClientes = Object.entries(clientesReceita)
+                .sort(([,a], [,b]) => b - a)
+                .slice(0, 3);
+
+            const topClientesDiv = document.getElementById('top-clientes');
+            topClientesDiv.innerHTML = topClientes.map(([cliente, receita], index) => `
+                <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
+                    <span>${index + 1}. ${cliente}</span>
+                    <span class="font-semibold text-blue-600">R$ ${receita.toFixed(2)}</span>
+                </div>
+            `).join('');
+        }
+
+        // Configuration functions
+        function updateConfigLists() {
+            updateList('especies', 'lista-especies');
+            updateList('clientes', 'lista-clientes');
+            updateList('fornecedores', 'lista-fornecedores');
+            document.getElementById('margem-minima').value = db.config.margemMinima;
+        }
+
+        function updateList(type, listId) {
+            const list = document.getElementById(listId);
+            list.innerHTML = '';
+            
+            db.config[type].forEach((item, index) => {
+                const li = document.createElement('li');
+                li.className = 'flex justify-between items-center p-3 bg-white rounded-lg border mb-2 shadow-sm';
+                
+                const itemName = typeof item === 'object' ? item.nome : item;
+                const itemPrice = typeof item === 'object' && item.precoKg ? ` - R$ ${item.precoKg.toFixed(2)}/kg` : '';
+                const itemImage = typeof item === 'object' && item.imagem ? 
+                    `<img src="${item.imagem}" alt="${itemName}" class="w-10 h-10 object-cover rounded-full mr-3 border-2 border-gray-200">` : '';
+                
+                li.innerHTML = `
+                    <div class="flex items-center flex-1">
+                        ${itemImage}
+                        <span class="font-medium text-gray-800">${itemName}${itemPrice}</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="editarItem('${type}', ${index})" class="text-blue-600 hover:text-blue-800 p-1 rounded" title="Editar">✏️</button>
+                        <button onclick="removerItem('${type}', ${index})" class="text-red-600 hover:text-red-800 p-1 rounded" title="Excluir">🗑️</button>
+                    </div>
+                `;
+                list.appendChild(li);
+            });
+        }
+
+        function adicionarEspecie() {
+            const inputNome = document.getElementById("nova-especie-nome");
+            const inputImagem = document.getElementById("nova-especie-imagem");
+            const especieNome = inputNome.value.trim();
+            const precoKg = parseFloat(document.getElementById("nova-especie-preco").value);
+            
+            if (especieNome && !isNaN(precoKg)) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imagemBase64 = e.target.result;
+                    db.config.especies.push({ nome: especieNome, precoKg: precoKg, imagem: imagemBase64 });
+                    saveData();
+                    updateConfigLists();
+                    populateSelects();
+                    inputNome.value = "";
+                    document.getElementById("nova-especie-preco").value = "";
+                    document.getElementById("preview-especie").innerHTML = "";
+                };
+                if (inputImagem.files[0]) {
+                    reader.readAsDataURL(inputImagem.files[0]);
+                } else {
+                    db.config.especies.push({ nome: especieNome, precoKg: precoKg, imagem: "" });
+                    saveData();
+                    updateConfigLists();
+                    populateSelects();
+                    inputNome.value = "";
+                    document.getElementById("nova-especie-preco").value = "";
+                    document.getElementById("preview-especie").innerHTML = "";
+                }
+            }
+        }
+
+        function adicionarCliente() {
+            const inputNome = document.getElementById("novo-cliente-nome");
+            const inputImagem = document.getElementById("novo-cliente-imagem");
+            const clienteNome = inputNome.value.trim();
+            
+            if (clienteNome) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imagemBase64 = e.target.result;
+                    db.config.clientes.push({ nome: clienteNome, imagem: imagemBase64 });
+                    saveData();
+                    updateConfigLists();
+                    populateSelects();
+                    inputNome.value = "";
+                    document.getElementById("preview-cliente").innerHTML = "";
+                };
+                if (inputImagem.files[0]) {
+                    reader.readAsDataURL(inputImagem.files[0]);
+                } else {
+                    db.config.clientes.push({ nome: clienteNome, imagem: "" });
+                    saveData();
+                    updateConfigLists();
+                    populateSelects();
+                    inputNome.value = "";
+                    document.getElementById("preview-cliente").innerHTML = "";
+                }
+            }
+        }
+
+        function adicionarFornecedor() {
+            const inputNome = document.getElementById("novo-fornecedor-nome");
+            const inputImagem = document.getElementById("novo-fornecedor-imagem");
+            const fornecedorNome = inputNome.value.trim();
+            
+            if (fornecedorNome) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imagemBase64 = e.target.result;
+                    db.config.fornecedores.push({ nome: fornecedorNome, imagem: imagemBase64 });
+                    saveData();
+                    updateConfigLists();
+                    populateSelects();
+                    inputNome.value = "";
+                    document.getElementById("preview-fornecedor").innerHTML = "";
+                };
+                if (inputImagem.files[0]) {
+                    reader.readAsDataURL(inputImagem.files[0]);
+                } else {
+                    db.config.fornecedores.push({ nome: fornecedorNome, imagem: "" });
+                    saveData();
+                    updateConfigLists();
+                    populateSelects();
+                    inputNome.value = "";
+                    document.getElementById("preview-fornecedor").innerHTML = "";
+                }
+            }
+        }
+
+        function removerItem(type, index) {
+            if (confirm('Tem certeza que deseja remover este item?')) {
+                db.config[type].splice(index, 1);
+                saveData();
+                updateConfigLists();
+                populateSelects();
+            }
+        }
+
+        function salvarConfiguracoes() {
+            db.config.margemMinima = parseFloat(document.getElementById('margem-minima').value) || 10;
+            saveData();
+            showAlert('Configurações salvas com sucesso!', 'success');
+        }
+
+        // Change password functions
+        function showChangePasswordModal() {
+            document.getElementById('change-password-modal').classList.remove('hidden');
+        }
+
+        function hideChangePasswordModal() {
+            document.getElementById('change-password-modal').classList.add('hidden');
+            document.getElementById('change-password-form').reset();
+        }
+
+        // Initialize change password form
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('change-password-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                handleChangePassword();
+            });
+        });
+
+        function editarItem(type, index) {
+            const item = db.config[type][index];
+            const itemName = typeof item === 'object' ? item.nome : item;
+            
+            let newName = prompt(`Editar nome:`, itemName);
+            if (newName === null) return; // Cancelou
+            
+            newName = newName.trim();
+            if (!newName) {
+                showAlert('Nome não pode estar vazio!', 'error');
+                return;
+            }
+            
+            if (typeof item === 'object') {
+                item.nome = newName;
+                
+                // Se for espécie, permitir editar preço também
+                if (type === 'especies' && item.precoKg !== undefined) {
+                    const newPrice = prompt(`Editar preço (R$/kg):`, item.precoKg.toFixed(2));
+                    if (newPrice !== null) {
+                        const price = parseFloat(newPrice);
+                        if (!isNaN(price) && price >= 0) {
+                            item.precoKg = price;
+                        } else {
+                            showAlert('Preço inválido!', 'error');
+                            return;
+                        }
+                    }
+                }
+            } else {
+                // Para itens que são apenas strings (compatibilidade)
+                db.config[type][index] = newName;
+            }
+            
+            saveData();
+            updateConfigLists();
+            populateSelects();
+            showAlert('Item editado com sucesso!', 'success');
+        }
+
+        function handleChangePassword() {
+            const currentPassword = document.getElementById('current-senha').value;
+            const newPassword = document.getElementById('new-senha-config').value;
+            const confirmPassword = document.getElementById('confirm-new-senha-config').value;
+
+            const savedCredentials = localStorage.getItem('controle_pescados_credentials');
+            if (!savedCredentials) {
+                showAlert('Erro ao acessar credenciais!', 'error');
+                return;
+            }
+
+            const credentials = JSON.parse(savedCredentials);
+            const hashedCurrentPassword = btoa(currentPassword);
+
+            if (credentials.senha !== hashedCurrentPassword) {
+                showAlert('Senha atual incorreta!', 'error');
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                showAlert('As novas senhas não coincidem!', 'error');
+                return;
+            }
+
+            if (newPassword.length < 4) {
+                showAlert('A nova senha deve ter pelo menos 4 caracteres!', 'error');
+                return;
+            }
+
+            // Update password
+            credentials.senha = btoa(newPassword);
+            localStorage.setItem('controle_pescados_credentials', JSON.stringify(credentials));
+            
+            hideChangePasswordModal();
+            showAlert('Senha alterada com sucesso!', 'success');
+        }
+
+        // Theme functions
+        function initializeTheme() {
+            const themeToggle = document.getElementById('theme-toggle');
+            const savedTheme = localStorage.getItem('controle_pescados_theme') || 'light';
+            
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark');
+                themeToggle.checked = true;
+            }
+
+            themeToggle.addEventListener('change', function() {
+                if (this.checked) {
+                    document.body.classList.add('dark');
+                    localStorage.setItem('controle_pescados_theme', 'dark');
+                } else {
+                    document.body.classList.remove('dark');
+                    localStorage.setItem('controle_pescados_theme', 'light');
+                }
+            });
+        }
+
+        // Preview image function
+        function previewImage(event, previewId) {
+            const file = event.target.files[0];
+            const preview = document.getElementById(previewId);
+            
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.innerHTML = `<img src="${e.target.result}" alt="Preview" class="w-16 h-16 object-cover rounded border">`;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                preview.innerHTML = '';
+            }
+        }
+
+        // Auto-fill price based on species
+        function preencherPrecoEspecie(tipo) {
+            const especieSelect = document.getElementById(`${tipo}-especie`);
+            const precoInput = document.getElementById(`${tipo}-preco`);
+            const especieSelecionada = especieSelect.value;
+            
+            if (especieSelecionada) {
+                const especie = db.config.especies.find(e => 
+                    (typeof e === 'object' ? e.nome : e) === especieSelecionada
+                );
+                
+                if (especie && typeof especie === 'object' && especie.precoKg) {
+                    precoInput.value = especie.precoKg.toFixed(2);
+                    // Trigger calculation if peso is already filled
+                    calcularTotal(tipo);
+                }
+            }
+        }
+
+        // Calculate total automatically
+        function calcularTotal(tipo) {
+            const peso = parseFloat(document.getElementById(`${tipo}-peso`).value) || 0;
+            const preco = parseFloat(document.getElementById(`${tipo}-preco`).value) || 0;
+            const total = peso * preco;
+            
+            const totalElement = document.getElementById(`${tipo}-total`);
+            if (totalElement) {
+                totalElement.textContent = `R$ ${total.toFixed(2)}`;
+            }
+        }
+        function populateSelects() {
+            const compraEspecieSelect = document.getElementById("compra-especie");
+            const vendaEspecieSelect = document.getElementById("venda-especie");
+            const filterEspecieSelect = document.getElementById("filter-especie");
+            const compraFornecedorSelect = document.getElementById("compra-fornecedor");
+            const vendaClienteSelect = document.getElementById("venda-cliente");
+            
+            // Clear and populate species selects
+            [compraEspecieSelect, vendaEspecieSelect, filterEspecieSelect].forEach(select => {
+                if (select) {
+                    const currentValue = select.value;
+                    select.innerHTML = select === filterEspecieSelect ? 
+                        '<option value="">Todas as espécies</option>' : 
+                        '<option value="">Selecione a espécie</option>';
+                    
+                    db.config.especies.forEach(especie => {
+                        const option = document.createElement('option');
+                        option.value = typeof especie === 'object' ? especie.nome : especie;
+                        option.textContent = typeof especie === 'object' ? especie.nome : especie;
+                        select.appendChild(option);
+                    });
+                    
+                    select.value = currentValue;
+                }
+            });
+
+            // Clear and populate fornecedor select
+            if (compraFornecedorSelect) {
+                const currentFornecedor = compraFornecedorSelect.value;
+                compraFornecedorSelect.innerHTML = '<option value="">Selecione o fornecedor</option>';
+                db.config.fornecedores.forEach(fornecedor => {
+                    const option = document.createElement('option');
+                    option.value = typeof fornecedor === 'object' ? fornecedor.nome : fornecedor;
+                    option.textContent = typeof fornecedor === 'object' ? fornecedor.nome : fornecedor;
+                    compraFornecedorSelect.appendChild(option);
+                });
+                compraFornecedorSelect.value = currentFornecedor;
+            }
+
+            // Clear and populate cliente select
+            if (vendaClienteSelect) {
+                const currentCliente = vendaClienteSelect.value;
+                vendaClienteSelect.innerHTML = '<option value="">Selecione o cliente</option>';
+                db.config.clientes.forEach(cliente => {
+                    const option = document.createElement('option');
+                    option.value = typeof cliente === 'object' ? cliente.nome : cliente;
+                    option.textContent = typeof cliente === 'object' ? cliente.nome : cliente;
+                    vendaClienteSelect.appendChild(option);
+                });
+                vendaClienteSelect.value = currentCliente;
+            }
+        }
+        function gerarReciboPDF(vendaId) {
+            const venda = db.vendas.find(v => v.id === vendaId);
+            if (!venda) {
+                showAlert('Venda não encontrada!', 'error');
+                return;
+            }
+
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+
+                // Header
+                doc.setFontSize(20);
+                doc.setFont(undefined, 'bold');
+                doc.text('🐟 CONTROLE DE PESCADOS', 20, 20);
+                
+                doc.setFontSize(16);
+                doc.text('RECIBO DE VENDA', 20, 35);
+                
+                // Line separator
+                doc.setLineWidth(0.5);
+                doc.line(20, 40, 190, 40);
+                
+                // Content
+                doc.setFontSize(12);
+                doc.setFont(undefined, 'normal');
+                
+                let yPosition = 55;
+                const lineHeight = 10;
+                
+                doc.text(`Data: ${new Date(venda.data).toLocaleDateString('pt-BR')}`, 20, yPosition);
+                yPosition += lineHeight;
+                
+                doc.text(`Cliente: ${venda.cliente}`, 20, yPosition);
+                yPosition += lineHeight;
+                
+                doc.text(`Espécie: ${venda.especie}`, 20, yPosition);
+                yPosition += lineHeight;
+                
+                doc.text(`Peso: ${venda.peso.toFixed(2)} kg`, 20, yPosition);
+                yPosition += lineHeight;
+                
+                doc.text(`Preço: R$ ${venda.preco.toFixed(2)}/kg`, 20, yPosition);
+                yPosition += lineHeight;
+                
+                // Total destacado
+                doc.setFont(undefined, 'bold');
+                doc.text(`TOTAL: R$ ${venda.total.toFixed(2)}`, 20, yPosition);
+                doc.setFont(undefined, 'normal');
+                yPosition += lineHeight * 1.5;
+                
+                if (venda.recibo) {
+                    doc.text(`Nº Recibo: ${venda.recibo}`, 20, yPosition);
+                    yPosition += lineHeight;
+                }
+                
+                if (venda.observacoes) {
+                    doc.text(`Observações: ${venda.observacoes}`, 20, yPosition);
+                    yPosition += lineHeight;
+                }
+                
+                // Footer
+                yPosition += lineHeight;
+                doc.setLineWidth(0.5);
+                doc.line(20, yPosition, 190, yPosition);
+                yPosition += 10;
+                
+                doc.setFontSize(10);
+                doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')}`, 20, yPosition);
+                doc.text(`Usuário: ${currentUser.usuario}`, 20, yPosition + 8);
+
+                // Generate filename with date and client
+                const fileName = `recibo_${venda.cliente.replace(/[^a-zA-Z0-9]/g, '_')}_${venda.data}.pdf`;
+                
+                // Save the PDF
+                doc.save(fileName);
+                
+                showAlert('Recibo PDF gerado com sucesso!', 'success');
+                
+            } catch (error) {
+                console.error('Erro ao gerar PDF:', error);
+                showAlert('Erro ao gerar o recibo PDF. Tente novamente.', 'error');
+            }
+        }
+
+        // Export/Import functions
+        function exportarBackup() {
+            const dataStr = JSON.stringify(db, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `backup_pescados_${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importarBackup() {
+            document.getElementById('file-import').click();
+        }
+
+        function processarImportacao(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    if (confirm('Isso substituirá todos os dados atuais. Continuar?')) {
+                        db = importedData;
+                        saveData();
+                        loadData();
+                        updateDashboard();
+                        populateSelects();
+                        showAlert('Backup importado com sucesso!', 'success');
+                    }
+                } catch (error) {
+                    showAlert('Erro ao importar backup!', 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function exportarCSV() {
+            let csv = 'Tipo,Data,Fornecedor/Cliente,Espécie,Peso,Preço,Total,Recibo,Observações\n';
+            
+            db.compras.forEach(c => {
+                csv += `Compra,${c.data},${c.fornecedor},${c.especie},${c.peso},${c.preco},${c.total},${c.recibo || ''},${c.observacoes || ''}\n`;
+            });
+            
+            db.vendas.forEach(v => {
+                csv += `Venda,${v.data},${v.cliente},${v.especie},${v.peso},${v.preco},${v.total},${v.recibo || ''},${v.observacoes || ''}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `dados_pescados_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Stock management
+        function updateEstoque() {
+            const estoqueData = {};
+            
+            // Calculate stock from purchases and sales
+            db.compras.forEach(compra => {
+                if (!estoqueData[compra.especie]) {
+                    estoqueData[compra.especie] = {
+                        comprado: 0,
+                        vendido: 0,
+                        custoTotal: 0,
+                        quantidadeCompras: 0
+                    };
+                }
+                estoqueData[compra.especie].comprado += compra.peso;
+                estoqueData[compra.especie].custoTotal += compra.total;
+                estoqueData[compra.especie].quantidadeCompras++;
+            });
+
+            db.vendas.forEach(venda => {
+                if (!estoqueData[venda.especie]) {
+                    estoqueData[venda.especie] = {
+                        comprado: 0,
+                        vendido: 0,
+                        custoTotal: 0,
+                        quantidadeCompras: 0
+                    };
+                }
+                estoqueData[venda.especie].vendido += venda.peso;
+            });
+
+            // Update stock summary
+            let totalPesoEstoque = 0;
+            let valorTotalEstoque = 0;
+            let especiesComEstoque = 0;
+            const lowStockItems = [];
+
+            const tableBody = document.getElementById('estoque-table-body');
+            tableBody.innerHTML = '';
+
+            Object.keys(estoqueData).forEach(especie => {
+                const data = estoqueData[especie];
+                const estoqueAtual = data.comprado - data.vendido;
+                const precoMedio = data.quantidadeCompras > 0 ? data.custoTotal / data.comprado : 0;
+                const valorEstoque = estoqueAtual * precoMedio;
+
+                if (estoqueAtual > 0) {
+                    totalPesoEstoque += estoqueAtual;
+                    valorTotalEstoque += valorEstoque;
+                    especiesComEstoque++;
+
+                    // Check for low stock (less than 5kg)
+                    if (estoqueAtual < 5) {
+                        lowStockItems.push(`${especie}: ${estoqueAtual.toFixed(2)} kg`);
+                    }
+                }
+
+                // Determine status
+                let status = '';
+                let statusClass = '';
+                if (estoqueAtual <= 0) {
+                    status = 'Sem Estoque';
+                    statusClass = 'text-red-600 bg-red-100';
+                } else if (estoqueAtual < 5) {
+                    status = 'Estoque Baixo';
+                    statusClass = 'text-yellow-600 bg-yellow-100';
+                } else {
+                    status = 'Normal';
+                    statusClass = 'text-green-600 bg-green-100';
+                }
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${especie}</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${data.comprado.toFixed(2)} kg</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${data.vendido.toFixed(2)} kg</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm font-semibold ${estoqueAtual > 0 ? 'text-blue-600' : 'text-red-600'}">${estoqueAtual.toFixed(2)} kg</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">R$ ${precoMedio.toFixed(2)}</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">R$ ${valorEstoque.toFixed(2)}</td>
+                    <td class="px-4 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">
+                            ${status}
+                        </span>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            // Update summary cards
+            document.getElementById('estoque-total-peso').textContent = `${totalPesoEstoque.toFixed(2)} kg`;
+            document.getElementById('estoque-valor-total').textContent = `R$ ${valorTotalEstoque.toFixed(2)}`;
+            document.getElementById('estoque-especies-count').textContent = especiesComEstoque;
+
+            // Show/hide low stock alert
+            const lowStockAlert = document.getElementById('low-stock-alert');
+            const lowStockList = document.getElementById('low-stock-list');
+            
+            if (lowStockItems.length > 0) {
+                lowStockAlert.classList.remove('hidden');
+                lowStockList.innerHTML = lowStockItems.map(item => `<p>• ${item}</p>`).join('');
+            } else {
+                lowStockAlert.classList.add('hidden');
+            }
+        }
+        function applyFilters() {
+            const dataInicial = document.getElementById('filter-data-inicial').value;
+            const dataFinal = document.getElementById('filter-data-final').value;
+            const especieFiltro = document.getElementById('filter-especie').value;
+            
+            // Filter data based on selected criteria
+            let comprasFiltradas = db.compras;
+            let vendasFiltradas = db.vendas;
+            
+            if (dataInicial) {
+                comprasFiltradas = comprasFiltradas.filter(c => c.data >= dataInicial);
+                vendasFiltradas = vendasFiltradas.filter(v => v.data >= dataInicial);
+            }
+            
+            if (dataFinal) {
+                comprasFiltradas = comprasFiltradas.filter(c => c.data <= dataFinal);
+                vendasFiltradas = vendasFiltradas.filter(v => v.data <= dataFinal);
+            }
+            
+            if (especieFiltro) {
+                comprasFiltradas = comprasFiltradas.filter(c => c.especie === especieFiltro);
+                vendasFiltradas = vendasFiltradas.filter(v => v.especie === especieFiltro);
+            }
+            
+            // Update dashboard with filtered data
+            updateDashboardWithFilteredData(comprasFiltradas, vendasFiltradas);
+        }
+
+        function updateDashboardWithFilteredData(comprasFiltradas, vendasFiltradas) {
+            // Update KPIs with filtered data
+            const totalPesoComprado = comprasFiltradas.reduce((sum, c) => sum + c.peso, 0);
+            const totalPesoVendido = vendasFiltradas.reduce((sum, v) => sum + v.peso, 0);
+            const totalReceita = vendasFiltradas.reduce((sum, v) => sum + v.total, 0);
+            const totalCusto = comprasFiltradas.reduce((sum, c) => sum + c.total, 0);
+            const lucroLiquido = totalReceita - totalCusto;
+            const margemLucro = totalReceita > 0 ? (lucroLiquido / totalReceita) * 100 : 0;
+
+            document.getElementById('kpi-peso-comprado').textContent = `${totalPesoComprado.toFixed(2)} kg`;
+            document.getElementById('kpi-peso-vendido').textContent = `${totalPesoVendido.toFixed(2)} kg`;
+            document.getElementById('kpi-receita-total').textContent = `R$ ${totalReceita.toFixed(2)}`;
+            document.getElementById('kpi-custo-total').textContent = `R$ ${totalCusto.toFixed(2)}`;
+            document.getElementById('kpi-lucro-liquido').textContent = `R$ ${lucroLiquido.toFixed(2)}`;
+            document.getElementById('kpi-margem-lucro').textContent = `${margemLucro.toFixed(1)}%`;
+
+            // Update charts with filtered data
+            updateChartsWithFilteredData(vendasFiltradas);
+            
+            // Update top tables with filtered data
+            updateTopTablesWithFilteredData(comprasFiltradas, vendasFiltradas);
+        }
+
+        function updateChartsWithFilteredData(vendasFiltradas) {
+            // Species chart
+            const especiesData = {};
+            vendasFiltradas.forEach(v => {
+                especiesData[v.especie] = (especiesData[v.especie] || 0) + v.peso;
+            });
+
+            const ctx1 = document.getElementById('chart-especies').getContext('2d');
+            if (charts.especies) charts.especies.destroy();
+            charts.especies = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(especiesData),
+                    datasets: [{
+                        label: 'Kg Vendidos',
+                        data: Object.values(especiesData),
+                        backgroundColor: '#0066CC'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Clients chart
+            const clientesData = {};
+            vendasFiltradas.forEach(v => {
+                clientesData[v.cliente] = (clientesData[v.cliente] || 0) + v.total;
+            });
+
+            const ctx2 = document.getElementById('chart-clientes').getContext('2d');
+            if (charts.clientes) charts.clientes.destroy();
+            charts.clientes = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(clientesData),
+                    datasets: [{
+                        data: Object.values(clientesData),
+                        backgroundColor: ['#0066CC', '#00A69C', '#069E6E', '#3B7996', '#2D2E47']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        function updateTopTablesWithFilteredData(comprasFiltradas, vendasFiltradas) {
+            // Top species by profit
+            const especiesLucro = {};
+            vendasFiltradas.forEach(v => {
+                const comprasEspecie = comprasFiltradas.filter(c => c.especie === v.especie);
+                const custoMedio = comprasEspecie.length > 0 ? 
+                    comprasEspecie.reduce((sum, c) => sum + c.preco, 0) / comprasEspecie.length : 0;
+                const lucro = (v.preco - custoMedio) * v.peso;
+                especiesLucro[v.especie] = (especiesLucro[v.especie] || 0) + lucro;
+            });
+
+            const topEspecies = Object.entries(especiesLucro)
+                .sort(([,a], [,b]) => b - a)
+                .slice(0, 3);
+
+            const topEspeciesDiv = document.getElementById('top-especies');
+            topEspeciesDiv.innerHTML = topEspecies.map(([especie, lucro], index) => `
+                <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
+                    <span>${index + 1}. ${especie}</span>
+                    <span class="font-semibold text-green-600">R$ ${lucro.toFixed(2)}</span>
+                </div>
+            `).join('');
+
+            // Top clients by revenue
+            const clientesReceita = {};
+            vendasFiltradas.forEach(v => {
+                clientesReceita[v.cliente] = (clientesReceita[v.cliente] || 0) + v.total;
+            });
+
+            const topClientes = Object.entries(clientesReceita)
+                .sort(([,a], [,b]) => b - a)
+                .slice(0, 3);
+
+            const topClientesDiv = document.getElementById('top-clientes');
+            topClientesDiv.innerHTML = topClientes.map(([cliente, receita], index) => `
+                <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
+                    <span>${index + 1}. ${cliente}</span>
+                    <span class="font-semibold text-blue-600">R$ ${receita.toFixed(2)}</span>
+                </div>
+            `).join('');
+        }
+
+        // Alert system
+        function showAlert(message, type = 'info') {
+            const alertsContainer = document.getElementById('alerts-container');
+            const alert = document.createElement('div');
+            
+            const colors = {
+                success: 'bg-green-100 border-green-400 text-green-700',
+                error: 'bg-red-100 border-red-400 text-red-700',
+                warning: 'bg-yellow-100 border-yellow-400 text-yellow-700',
+                info: 'bg-blue-100 border-blue-400 text-blue-700'
+            };
+            
+            alert.className = `${colors[type]} border px-4 py-3 rounded mb-2 shadow-md`;
+            alert.innerHTML = `
+                <span>${message}</span>
+                <button onclick="this.parentElement.remove()" class="float-right font-bold">×</button>
+            `;
+            
+            alertsContainer.appendChild(alert);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (alert.parentElement) {
+                    alert.remove();
+                }
+            }, 5000);
+        }
+
+        // PWA functionality
+        function initializePWA() {
+            let deferredPrompt;
+            const installButton = document.getElementById('install-button');
+
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                installButton.classList.remove('hidden');
+            });
+
+            installButton.addEventListener('click', async () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    if (outcome === 'accepted') {
+                        installButton.classList.add('hidden');
+                    }
+                    deferredPrompt = null;
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+

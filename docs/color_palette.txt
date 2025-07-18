@@ -1,0 +1,8 @@
+Paleta de Cores (Azul e Verde):
+#069E6E
+#3B7996
+#2D2E47
+#00BAB4
+
+As cores fornecidas pelo usuário são azul (#0066CC) e verde (#00A69C). Vou considerar essas como as cores primárias e as cores da paleta encontrada como secundárias/complementares.
+
